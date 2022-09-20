@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TÖTEN</title>
+</head>
+<body>
+
+<fieldset>
+
+    {{ name }}, töte {{ victim }} mit {{ thing }}!
+
+    <form method="POST" action="/has_killed?name={{ name }}">
+        <button type="submit">Ich habe {{ victim }} getoetet!</button>
+    </form>
+</fieldset>
+
+<fieldset>
+    <legend> Weiter </legend>
+
+    <form method="GET" action="/friedhof">
+        <button type="submit"> Zum Friedhof </button>
+    </form>
+
+    <form method="GET" action="/">
+        <button type="submit"> Zurück </button>
+    </form>
+</fieldset>
+
+</body>
+</html>

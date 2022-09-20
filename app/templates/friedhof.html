@@ -1,0 +1,39 @@
+<!--
+Attributes:
+- dead_people: list<str>
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TÖTEN</title>
+</head>
+<body>
+
+<fieldset>
+    <h1>Friedhof</h1>
+</fieldset>
+
+<fieldset>
+    <img id="gif"
+         src="https://media3.giphy.com/media/QuxqWk7m9ffxyfoa0a/200w.webp?cid=dda24d507f6a9943c6bcb985866f39b01424c9d0475af971&amp;rid=200w.webp&amp;ct=g"
+         srcset="https://media3.giphy.com/media/QuxqWk7m9ffxyfoa0a/200w.webp?cid=dda24d507f6a9943c6bcb985866f39b01424c9d0475af971&amp;rid=200w.webp&amp;ct=g 200w,https://media3.giphy.com/media/QuxqWk7m9ffxyfoa0a/giphy.webp?cid=dda24d507f6a9943c6bcb985866f39b01424c9d0475af971&amp;rid=giphy.webp&amp;ct=g 480w,"
+         sizes="100vw" alt="">
+</fieldset>
+
+<fieldset>
+    <legend>Grabsteine</legend>
+
+    <ul>
+    {% for person in dead_people %}
+    <li style="list-style-type:none;"><h2> † Hier ruht {{ person }} - {{ get_inschrift() }} † </h2></li>
+    {% endfor %}
+    </ul>
+</fieldset>
+
+<form method="GET" action="/">
+    <button type="submit">Zurück</button>
+</form>
+
+</body>
+</html>

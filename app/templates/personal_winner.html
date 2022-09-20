@@ -1,0 +1,29 @@
+<!--
+Attributes:
+- name: str
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TÖTEN</title>
+</head>
+<body>
+
+<fieldset>
+Glückwunsch {{ name }}, du hast gewonnen!
+</fieldset>
+
+<fieldset>
+    <legend> Weiter </legend>
+
+    <form method="GET" action="/friedhof">
+        <button type="submit"> Zum Friedhof </button>
+    </form>
+
+    <form method="GET" action="/">
+        <button type="submit"> Zurück </button>
+    </form>
+</fieldset>
+</body>
+</html>
