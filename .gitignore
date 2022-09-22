@@ -1,3 +1,9 @@
+# Saves Ordner wird automatisch erstellt
 /saves
 
+# doofe .DS_Store Datei
 .DS_Store
+
+# Auch diese brauchen wir nicht 
+/__pycache__
+/app/__pycache__
