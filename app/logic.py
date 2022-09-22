@@ -120,7 +120,10 @@ class Game:
         # set the things, alive_status and killcount for the new game
         for person in self.persons:
             if len(new_gamestate['available_things']) == 0:
-                new_gamestate['available_things'] = self.things.copy()
+                if len(self.things) == 0:
+                    new_gamestate['available_things'].append("")
+                else:
+                    new_gamestate['available_things'] = self.things.copy()
 
             thing = random.choice(new_gamestate['available_things'])
             new_gamestate['available_things'].remove(thing)
