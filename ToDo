@@ -1,0 +1,13 @@
+- Es sollte mehrere Sessions geben können
+    - jede Session hat ein Game und ein Kennwort
+    - Beim betreten einer Session wird man nach seinem Namen gefragt
+    - Sessions können wieder aufgerufen werden
+    - Wenn eine schon bestehende Session betreten wird dann sollte der letzte Spielstand geladen werden
+
+- Speichern und Laden hat noch keine Vision
+    - Beim Starten einer Session wird ein Savefile erstellt
+    - ein Spielstand kann in den Einstellungen gespeichert und geladen werden
+    - beim Hinzufügen und Löschen von Gegenständen und Personen werden diese gespeichert
+
+- In "/" sollte angezeigt werden, welche Personen angemeldet sind und welche im Moment spielen
+    - Abschnitt unterm Leaderboard mit Spielern, die angemeldet sind aber gerade nicht spielen
