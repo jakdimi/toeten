@@ -2,6 +2,7 @@ import random
 import json
 from os.path import exists
 from datetime import datetime
+from dataclasses import dataclass
 
 
 class Game:
@@ -214,3 +215,53 @@ class Game:
         return dead_people
 
 # =====================================================================================
+
+@dataclass
+class Session:
+    name: str
+    player_names: list
+    weapons: list
+    game: Game
+
+    def make_new_game(self):
+        return None
+
+    def save(self):
+        pass
+
+    def load(self):
+        pass
+
+    def add_weapon(self):
+        pass
+
+
+@dataclass
+class NewGame:
+    name: str
+    players: list
+    available_weapons: list
+
+    def get_player(self, player_name):
+        for player in self.players:
+            if player.name == player_name:
+                return player
+
+        return None
+
+    def new_game(self, ):
+        pass
+
+
+@dataclass
+class Player:
+    name: str
+    victim = None
+    alive = True
+    kill_count = 0
+
+
+@dataclass
+class Weapon:
+    name: str
+    creator_name: str
