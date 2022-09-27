@@ -1,0 +1,93 @@
+<!--
+Attributes:
+- hash: str
+- session_name: str
+- player_name: str
+- victim_name: str
+- mode: "alive" | "dead" | "not_running"
+- nr_of_things: str
+- player_infos: tuple<(str, str, str)> (required if mode != "not_running") (name, kill_count, "alive" | "dead")
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TÖTEN</title>
+</head>
+<body>
+
+<div>
+    <h2> {{ session_name }} </h2>
+    <form method="GET" action="/">
+        <button type="submit"> Session verlassen </button>
+    </form>
+</div>
+
+<fieldset>
+    <legend>  Persönlicher Bereich </legend>
+    {% if mode == "alive" %}
+    <div>
+        <p> Hallo {{ player_name }}! Töte {{ victim_name }} mit {{ weapon }}!</p>
+    </div>
+    <div>
+        <form method="POST" action="/has_killed?hash={{ hash }}">
+            <button name="has_killed"> Ich habe {{ victim_name }} getötet! </button>
+        </form>
+    </div>
+    {% endif %}
+
+    {% if mode == "dead" %}
+    <div>
+        <p> Hallo {{ player_name }}! Du bist leider tot! </p>
+    </div>
+    {% endif %}
+
+    {% if mode == "not_running" %}
+    <div>
+        <p> {{ player_name }}, das Spiel hat noch nicht angefangen. Gehe in die Einstellungen um das Spiel zu starten. </p>
+    </div>
+    {% endif %}
+</fieldset>
+
+<fieldset>
+    <legend> Gegenstände hinzufügen </legend>
+    <div>
+        Bis jetzt gibt es {{ nr_of_things }} Gegenstände.
+    </div>
+    <div>
+        <form method="POST" action="/add_thing?hash={{ hash }}">
+            <input name="thing">
+            <button type="submit">Füge das Ding hinzu!</button>
+        </form>
+    </div>
+</fieldset>
+
+{% if mode != "not_running" %}
+<fieldset>
+    <label>Leaderboard</label>
+    {% for (person, kills, staus) in player_infos %}
+    <ol>
+        {% if status == "alive" %}
+        <li> {{ person }} hat {{ kills }} getötet lebt noch! </li>
+        {% endif %}
+
+        {% if status == "dead" %}
+        <li> {{ person }} hat {{ kills }} getötet ist tot. </li>
+        {% endif %}
+    </ol>
+    {% endfor %}
+</fieldset>
+{% endif %}
+
+<fieldset>
+    <legend> Weiter: </legend>
+    <form method="GET" action="/settings?hash={{ hash }}">
+        <button type="submit">Einstellungen</button>
+    </form>
+    <form method="GET" action="/friedhof?hash={{ hash }}">
+        <button type="submit">Zum Friedhof</button>
+    </form>
+</fieldset>
+
+</body>
+</html>

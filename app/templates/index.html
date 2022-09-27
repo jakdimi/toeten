@@ -14,50 +14,19 @@ Attributes:
 <body>
 
 <fieldset>
-    <legend>  Persönlicher Bereich </legend>
-    Ich bin:
-    <form method="POST" action="/personal">
-        <select name="people_select">
-            {% for person in persons %}
-            <option value="{{ person }}">{{ person }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Zeigs mir wen ich toeten soll!</button>
-    </form>
-</fieldset>
-
-<fieldset>
-    <legend> Neue Dinge hinzufügen </legend>
-    <div>
-        Bis jetzt gibt es {{ nr_of_things }} Gegenstände.
-    </div>
-    <div>
-        <form method="POST" action="/addthing">
-            <input name="thing">
-            <button type="submit">Füge das Ding hinzu!</button>
-        </form>
-    </div>
-</fieldset>
-
-{% if running == "True" %}
-<fieldset>
-    <label>Leaderboard</label>
-    {% for (person, kills) in leaderboard %}
-    <ol>
-        <li> {{ person }} hat {{ kills }} getötet </li>
-    </ol>
-    {% endfor %}
-</fieldset>
-{% endif %}
-
-<fieldset>
-    <legend> Weiter: </legend>
-    <form method="GET" action="/settings">
-        <button type="submit">Einstellungen</button>
-    </form>
-
-    <form method="GET" action="/friedhof">
-        <button type="submit">Zum Friedhof</button>
+    <legend> Login </legend>
+    <form method="POST" action="/session">
+        <div>
+            <label for="session_name"> Session: </label>
+            <input name="session_name" id="session_name">
+        </div>
+        <div>
+            <label for="player_name"> Spieler: </label>
+            <input name="player_name" id="player_name">
+        </div>
+        <div>
+            <button type="submit">Einloggen</button>
+        </div>
     </form>
 </fieldset>
 

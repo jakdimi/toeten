@@ -103,12 +103,17 @@ class Session:
 
     # ========================== handle game mechanics ====================================
 
+    def _index_of(self, name):
+        return self.current_game['player_order'].index(name)
+
     def add_thing(self, thing):
+        print(f"added {thing}")
         self.things.append(thing)
         self.current_game['available_things'].append(thing)
         random.shuffle(self.current_game['available_things'])
+        print(self.things)
 
-    def add_person(self, person):
+    def add_player(self, person):
         self.players.append(person)
         self.players.sort()
 
@@ -116,9 +121,6 @@ class Session:
         players_copy = self.current_game['player_order'].copy()
         players_copy.sort()
         return players_copy
-
-    def _index_of(self, name):
-        return self.current_game['player_order'].index(name)
 
     def is_alive(self, name):
         alive_status = self.current_game['alive_status']
@@ -165,13 +167,16 @@ class Session:
                 dead_people.append(person)
         return dead_people
 
+    def get_kill_count(self, player_name):
+        return self.current_game['kill_count'][self._index_of(player_name)]
+
 # =====================================================================================
 
 
 def load_session(session_name):
     file_name = f"..//saves//{session_name}.json"
     if not exists(file_name):
-        return Session(session_name, [], [])
+        session = Session(session_name, [], [])
     else:
         with open(file_name, mode='r') as file:
             session_dict = json.load(file)
@@ -184,9 +189,8 @@ def load_session(session_name):
         session = Session(session_name, players, things)
         session.running = running
         session.current_game = current_game
-        session.save()
-
-        return session
+    session.save()
+    return session
 
 
 
