@@ -1,5 +1,8 @@
-import os
+"""
+In this module lives the flask application of the website.
+"""
 
+import os
 import settings
 import logic
 import random
@@ -7,16 +10,46 @@ from flask import Flask, request, render_template, redirect
 
 
 sessions = {}
+""" 
+a dict of all the active sessions. 
+looks like this:
+{
+    'session_name1': session1
+    ...
+}
+"""
 hash_table = {}
+""" 
+a dict that links hashes of session- and player-names with the names themselves.
+looks like this:
+{
+    'hash_of_session_name1_and_player_name1': ('session_name1', 'player_name1')
+    ...
+}
+all players in all sessions can be looked up here.
+"""
 
 
 def hash_args(session_name, player_name):
+    """
+    Returns a hash of a concatenation of session_name and player_name as a string.
+    The hash is used in the global hash-table
+    :param session_name: the name of a session
+    :param player_name: the name of a player
+    :return: the hash-value
+    """
     hash_str = str(hash(session_name + player_name))
     hash_table[hash_str] = (session_name, player_name)
     return hash_str
 
 
 def str_or(str1, str2):
+    """
+    Returns the first input that is not None. If all inputs are None returns None.
+    :param str1: first string
+    :param str2: second string
+    :return: str1 or str2 or None
+    """
     if str1 is not None:
         return str1
 
@@ -27,10 +60,19 @@ def str_or(str1, str2):
 
 
 def start_session(session_name):
+    """
+    start the session with name session_name. If there is no save-file of this session create a new session.
+    :param session_name: the name of the session
+    :return: None
+    """
     sessions[session_name] = (logic.load_session(session_name))
 
 
 def get_inschrift():
+    """
+    returns a random Grabinschrift
+    :return: a Grabinschrift as str
+    """
     inschriften = [
         "Er starb wie er lebte.",
         "Möge er in Frieden ruhen.",
@@ -49,16 +91,27 @@ def get_inschrift():
 
 
 app = Flask(__name__, template_folder='templates')
+"""
+The Flask application
+"""
 
 
 @app.route('/')
 def index():
+    """
+    Returns the index-page with corresponding attributes
+    :return: The index-page
+    """
     with app.app_context():
         return render_template('index.html')
 
 
 @app.route('/session', methods=['POST'])
 def set_session():
+    """
+    Called to get the personal session-page
+    :return: redirect to the personal session-page
+    """
     session_name = request.form.get('session_name')
     player_name = request.form.get('player_name')
 
@@ -78,6 +131,10 @@ def set_session():
 
 @app.route('/session', methods=['GET'])
 def get_session():
+    """
+    Returns the personal session-page with corresponding attributes
+    :return: The session-page
+    """
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
     if hash_str is None or hash_str not in hash_table.keys():
         return redirect('/')
@@ -142,6 +199,10 @@ def get_session():
 
 @app.route("/settings")
 def settings_page():
+    """
+    Returns the settings-page with corresponding attributes
+    :return: The settings-page
+    """
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
 
     if hash_str is None:
@@ -156,6 +217,10 @@ def settings_page():
 
 @app.route("/add_thing", methods=['POST'])
 def add_thing():
+    """
+    add a weapon to the session that corresponds to request.args.get('hash') or request.form.get('hash')
+    :return: index-page if there was a problem, personal session-page if not
+    """
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
     session_name, player_name = hash_table.get(hash_str)
     session = sessions.get(session_name)
@@ -170,6 +235,11 @@ def add_thing():
 
 @app.route("/has_killed", methods=['GET', 'POST'])
 def has_killed():
+    """
+    called by the killer that corresponds to request.args.get('hash') or request.form.get('hash'),
+    to kill his current victim.
+    :return: index-page if there was a problem, personal session-page if not
+    """
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
     print(hash_table)
     session_name, player_name = hash_table.get(hash_str)
@@ -185,6 +255,10 @@ def has_killed():
 
 @app.route("/friedhof")
 def friedhof():
+    """
+    Returns the friedhof-page with corresponding attributes
+    :return: The friedhof-page
+    """
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
     session_name, player_name = hash_table.get(hash_str)
     session = sessions.get(session_name)
@@ -204,6 +278,10 @@ def friedhof():
 
 @app.route('/new_game')
 def new_game():
+    """
+    start a new game in the session that corresponds to request.args.get('hash') or request.form.get('hash').
+    :return: the personal session-page
+    """
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
     print(hash_str)
     session_name, player_name = hash_table.get(hash_str)
@@ -218,6 +296,10 @@ def new_game():
 
 @app.route('/save_game')
 def save_game():
+    """
+    save the session that corresponds to request.args.get('hash') or request.form.get('hash').
+    :return: the personal session-page
+    """
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
     session_name, player_name = hash_table.get(hash_str)
 
@@ -231,6 +313,11 @@ def save_game():
 
 @app.route('/end_game')
 def end_game():
+    """
+    if there is a game running in the session that corresponds to request.args.get('hash') or request.form.get('hash'),
+    end it.
+    :return: the personal session-page
+    """
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
     session_name, player_name = hash_table.get(hash_str)
 
@@ -244,6 +331,11 @@ def end_game():
 
 @app.route('/remove_player')
 def remove_player():
+    """
+    remove the player with name request.args.get('player_to_remove') from the session that corresponds to
+    request.args.get('hash') or request.form.get('hash').
+    :return: the personal session-page
+    """
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
     session_name, player_name = hash_table.get(hash_str)
 
