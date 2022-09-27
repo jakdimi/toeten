@@ -30,7 +30,8 @@ Attributes:
         <p> Hallo {{ player_name }}! Töte {{ victim_name }} mit {{ weapon }}!</p>
     </div>
     <div>
-        <form method="POST" action="/has_killed?hash={{ hash }}">
+        <form method="POST" action="/has_killed">
+            <input type="hidden" name="hash" value="{{ hash }}">
             <button name="has_killed"> Ich habe {{ victim_name }} getötet! </button>
         </form>
     </div>
@@ -55,8 +56,9 @@ Attributes:
         Bis jetzt gibt es {{ nr_of_things }} Gegenstände.
     </div>
     <div>
-        <form method="POST" action="/add_thing?hash={{ hash }}">
+        <form method="POST" action="/add_thing">
             <input name="thing">
+            <input type="hidden" name="hash" value="{{ hash }}">
             <button type="submit">Füge das Ding hinzu!</button>
         </form>
     </div>
@@ -64,15 +66,15 @@ Attributes:
 
 {% if mode != "not_running" %}
 <fieldset>
-    <label>Leaderboard</label>
-    {% for (person, kills, staus) in player_infos %}
+    <legend>Leaderboard</legend>
+    {% for (person, kills, status) in player_infos %}
     <ol>
         {% if status == "alive" %}
-        <li> {{ person }} hat {{ kills }} getötet lebt noch! </li>
+        <li> {{ person }} hat {{ kills }} getötet und lebt noch! </li>
         {% endif %}
 
         {% if status == "dead" %}
-        <li> {{ person }} hat {{ kills }} getötet ist tot. </li>
+        <li> {{ person }} hat {{ kills }} getötet und ist tot. </li>
         {% endif %}
     </ol>
     {% endfor %}
@@ -80,7 +82,7 @@ Attributes:
 {% endif %}
 
 <fieldset>
-    <legend> Weiter: </legend>
+    <legend> Weiter </legend>
     <form method="GET" action="/settings">
         <input type="hidden" name="hash" value="{{ hash }}">
         <button type="submit">Einstellungen</button>

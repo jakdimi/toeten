@@ -99,8 +99,8 @@ def get_session():
                 alive = "dead"
             kill_count = session.get_kill_count(player)
             player_infos.append((player, kill_count, alive))
+            player_infos.sort(key=lambda x: x[1], reverse=True)
 
-        print(f"nr_of_things: {len(session.things)}")
         with app.app_context():
             return render_template(
                 'session.html',
@@ -157,6 +157,7 @@ def add_thing():
 @app.route("/has_killed", methods=['GET', 'POST'])
 def has_killed():
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
+    print(hash_table)
     session_name, player_name = hash_table[hash_str]
     session = sessions[session_name]
 
@@ -165,7 +166,7 @@ def has_killed():
 
     session.has_killed(player_name)
     print(f"{session.get_victim(player_name)} wurde getoetet!")
-    return redirect(f"/personal?name={player_name}")
+    return redirect(f"/session?hash={hash_str}")
 
 
 @app.route("/friedhof")
