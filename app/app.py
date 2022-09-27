@@ -1,3 +1,5 @@
+import os
+
 import settings
 import logic
 import random
@@ -66,9 +68,9 @@ def set_session():
     if session_name not in sessions.keys():
         start_session(session_name)
 
-    session = sessions[session_name]
+    session = sessions.get(session_name)
     if player_name not in session.players:
-        sessions[session_name].add_player(player_name)
+        sessions.get(session_name).add_player(player_name)
 
     hash_str = hash_args(session_name, player_name)
     return redirect(f'/session?hash={hash_str}')
@@ -77,18 +79,27 @@ def set_session():
 @app.route('/session', methods=['GET'])
 def get_session():
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
-    if hash_str is None:
+    if hash_str is None or hash_str not in hash_table.keys():
         return redirect('/')
 
-    session_name, player_name = hash_table[hash_str]
+    session_name, player_name = hash_table.get(hash_str)
 
-    session = sessions[session_name]
+    session = sessions.get(session_name)
 
     if session.running:
-        if session.is_alive(player_name):
-            mode = 'alive'
+        if session.player_in_game(player_name):
+            if session.is_alive(player_name):
+                mode = 'alive'
+                victim = session.get_victim(player_name)
+                weapon = session.get_thing(player_name)
+            else:
+                mode = 'dead'
+                victim = None
+                weapon = None
         else:
-            mode = 'dead'
+            mode = 'not_in_game'
+            victim = None
+            weapon = None
 
         player_infos = []
 
@@ -99,6 +110,7 @@ def get_session():
                 alive = "dead"
             kill_count = session.get_kill_count(player)
             player_infos.append((player, kill_count, alive))
+            player_infos.sort(key=lambda x: x[0], reverse=True)
             player_infos.sort(key=lambda x: x[1], reverse=True)
 
         with app.app_context():
@@ -107,11 +119,13 @@ def get_session():
                 hash=hash_str,
                 session_name=session_name,
                 player_name=player_name,
-                victim_name=session.get_victim(player_name),
+                victim_name=victim,
+                weapon=weapon,
                 mode=mode,
                 nr_of_things=len(session.things),
                 player_infos=player_infos
             )
+
 
     else:
         mode = "not_running"
@@ -143,8 +157,8 @@ def settings_page():
 @app.route("/add_thing", methods=['POST'])
 def add_thing():
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
-    session_name, player_name = hash_table[hash_str]
-    session = sessions[session_name]
+    session_name, player_name = hash_table.get(hash_str)
+    session = sessions.get(session_name)
     thing = request.form.get('thing')
 
     if session is None or thing is None:
@@ -158,8 +172,8 @@ def add_thing():
 def has_killed():
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
     print(hash_table)
-    session_name, player_name = hash_table[hash_str]
-    session = sessions[session_name]
+    session_name, player_name = hash_table.get(hash_str)
+    session = sessions.get(session_name)
 
     if session is None:
         return redirect('/')
@@ -172,8 +186,8 @@ def has_killed():
 @app.route("/friedhof")
 def friedhof():
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
-    session_name, player_name = hash_table[hash_str]
-    session = sessions[session_name]
+    session_name, player_name = hash_table.get(hash_str)
+    session = sessions.get(session_name)
 
     if session is None:
         return redirect('/')
@@ -192,12 +206,12 @@ def friedhof():
 def new_game():
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
     print(hash_str)
-    session_name, player_name = hash_table[hash_str]
+    session_name, player_name = hash_table.get(hash_str)
 
     if session_name is None:
         return redirect('/')
 
-    session = sessions[session_name]
+    session = sessions.get(session_name)
     session.start_new_game()
     return redirect(f'/session?hash={hash_str}')
 
@@ -205,12 +219,12 @@ def new_game():
 @app.route('/save_game')
 def save_game():
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
-    session_name, player_name = hash_table[hash_str]
+    session_name, player_name = hash_table.get(hash_str)
 
     if session_name is None:
         return redirect('/')
 
-    session = sessions[session_name]
+    session = sessions.get(session_name)
     session.save()
     return redirect(f'/session?hash={hash_str}')
 
@@ -218,13 +232,37 @@ def save_game():
 @app.route('/end_game')
 def end_game():
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
-    session_name, player_name = hash_table[hash_str]
+    session_name, player_name = hash_table.get(hash_str)
 
     if session_name is None:
         return redirect('/')
 
-    session = sessions[session_name]
+    session = sessions.get(session_name)
     session.end_game()
+    return redirect(f'/session?hash={hash_str}')
+
+
+@app.route('/remove_player')
+def remove_player():
+    hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
+    session_name, player_name = hash_table.get(hash_str)
+
+    player_to_remove = request.args.get('player_to_remove')
+
+    if session_name is None:
+        return redirect('/')
+
+    session = sessions.get(session_name)
+    session.remove_player(player_to_remove)
+
+    del hash_table[hash_args(session_name, player_to_remove)]
+
+    if len(session.players) == 0:
+        del sessions[session_name]
+        os.remove(f"..//saves//{session_name}.json")
+
+    if player_to_remove == player_name:
+        return redirect('/')
     return redirect(f'/session?hash={hash_str}')
 
 

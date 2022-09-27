@@ -62,18 +62,18 @@ class Session:
 
         # set the things, alive_status and kill_count for the new game
         for person in self.players:
-            if len(new_game['available_things']) == 0:
+            if len(new_game.get('available_things')) == 0:
                 if len(self.things) == 0:
-                    new_game['available_things'].append("")
+                    new_game.get('available_things').append("")
                 else:
                     new_game['available_things'] = self.things.copy()
 
-            thing = random.choice(new_game['available_things'])
-            new_game['available_things'].remove(thing)
+            thing = random.choice(new_game.get('available_things'))
+            new_game.get('available_things').remove(thing)
 
-            new_game['things'].append(thing)
-            new_game['alive_status'].append("True")
-            new_game['kill_count'].append("0")
+            new_game.get('things').append(thing)
+            new_game.get('alive_status').append("True")
+            new_game.get('kill_count').append("0")
 
         return new_game
 
@@ -101,41 +101,54 @@ class Session:
     # ========================== handle game mechanics ====================================
 
     def _index_of(self, name):
-        return self.current_game['player_order'].index(name)
+        return self.current_game.get('player_order').index(name)
 
     def add_thing(self, thing):
         self.things.append(thing)
         if self.running:
-            self.current_game['available_things'].append(thing)
-            random.shuffle(self.current_game['available_things'])
+            self.current_game.get('available_things').append(thing)
+            random.shuffle(self.current_game.get('available_things'))
 
     def add_player(self, person):
         self.players.append(person)
         self.players.sort()
 
+    def remove_player(self, player):
+        print(f"remove '{player}' from {self.players}")
+        self.players.remove(player)
+        if self.running:
+            ind = self._index_of(player)
+            del self.current_game.get('player_order')[ind]
+            del self.current_game.get('things')[ind]
+            del self.current_game.get('alive_status')[ind]
+            del self.current_game.get('kill_count')[ind]
+
     def get_players(self):
-        players_copy = self.current_game['player_order'].copy()
+        players_copy = self.current_game.get('player_order').copy()
         players_copy.sort()
         return players_copy
 
+    def player_in_game(self, player):
+        return player in self.get_players()
+
     def is_alive(self, name):
-        alive_status = self.current_game['alive_status']
+        alive_status = self.current_game.get('alive_status')
         return alive_status[self._index_of(name)] == "True"
 
     def renew_thing(self, name):
-        available_things = self.current_game['available_things']
+        available_things = self.current_game.get('available_things')
         if len(available_things) == 0:
             available_things = self.things.copy()
 
         thing = random.choice(available_things)
         available_things.remove(thing)
 
-        self.current_game['things'][self._index_of(name)] = thing
+        self.current_game.get('things')[self._index_of(name)] = thing
 
     def get_victim(self, name):
         ind = self._index_of(name)
-        player_order = self.current_game['player_order']
-        alive_status = self.current_game['alive_status']
+        player_order = self.current_game.get('player_order')
+        alive_status = self.current_game.get('alive_status')
         for i in range(ind + 1, len(self.players) + ind + 1):
             if alive_status[i % len(player_order)] == "True":
                 victim = player_order[i % len(player_order)]
@@ -144,13 +157,13 @@ class Session:
 
     def get_thing(self, name):
         ind = self._index_of(name)
-        return self.current_game['things'][ind]
+        return self.current_game.get('things')[ind]
 
     def has_killed(self, killer_name):
         victim_index = self._index_of(self.get_victim(killer_name))
         killer_index = self._index_of(killer_name)
-        alive_status = self.current_game['alive_status']
-        kill_count = self.current_game['kill_count']
+        alive_status = self.current_game.get('alive_status')
+        kill_count = self.current_game.get('kill_count')
         self.renew_thing(killer_name)
         kill_count[killer_index] = f"{ int(kill_count[killer_index]) + 1 }"
         alive_status[victim_index] = "False"
@@ -158,13 +171,13 @@ class Session:
 
     def get_dead(self):
         dead_people = []
-        for person in self.current_game['player_order']:
+        for person in self.current_game.get('player_order'):
             if not self.is_alive(person):
                 dead_people.append(person)
         return dead_people
 
     def get_kill_count(self, player_name):
-        return self.current_game['kill_count'][self._index_of(player_name)]
+        return self.current_game.get('kill_count')[self._index_of(player_name)]
 
 # =====================================================================================
 
@@ -177,10 +190,10 @@ def load_session(session_name):
         with open(file_name, mode='r') as file:
             session_dict = json.load(file)
 
-        running = session_dict['running']
-        players = session_dict['players']
-        things = session_dict['things']
-        current_game = session_dict['current_game']
+        running = session_dict.get('running')
+        players = session_dict.get('players')
+        things = session_dict.get('things')
+        current_game = session_dict.get('current_game')
 
         session = Session(session_name, players, things)
         session.running = running

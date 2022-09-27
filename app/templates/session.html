@@ -1,15 +1,18 @@
 <!--
 Attributes:
+_____________Always required__________________
 - hash: str
 - session_name: str
 - player_name: str
-- victim_name: str
-- mode: "alive" | "dead" | "not_running"
+- mode: "alive" | "dead" | "not_running" | "not_in_game"
 - nr_of_things: str
-- player_infos: tuple<(str, str, str)> (required if mode != "not_running") (name, kill_count, "alive" | "dead")
+_____________Required if mode != "not_running"__________________
+- victim_name:
+- weapon: str
+- player_infos: tuple<(str, str, str)>  (name, kill_count, "alive" | "dead")
 -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <title>TÖTEN</title>
@@ -17,7 +20,7 @@ Attributes:
 <body>
 
 <div>
-    <h2> Hallo {{ player_name }}, du bist im Spiel: {{ session_name }} </h2>
+    <h2> Hallo {{ player_name }}, du bist im Spiel "{{ session_name }}". </h2>
     <form method="GET" action="/">
         <button type="submit"> Session verlassen </button>
     </form>
@@ -45,7 +48,19 @@ Attributes:
 
     {% if mode == "not_running" %}
     <div>
-        <p> {{ player_name }}, das Spiel hat noch nicht angefangen. Gehe in die Einstellungen um das Spiel zu starten. </p>
+        <p>
+            {{ player_name }}, das Spiel hat noch nicht angefangen.
+            Gehe in die Einstellungen um das Spiel zu starten.
+        </p>
+    </div>
+    {% endif %}
+
+    {% if mode == "not_in_game" %}
+    <div>
+        <p>
+            {{ player_name }}, gerade läuft ein Spiel an dem du nicht teilnimmst.
+            Gehe in die Einstellungen um ein neues Spiel zu starten.
+        </p>
     </div>
     {% endif %}
 </fieldset>
@@ -69,13 +84,16 @@ Attributes:
     <legend>Leaderboard</legend>
     {% for (person, kills, status) in player_infos %}
     <ol>
-        {% if status == "alive" %}
-        <li> {{ person }} hat {{ kills }} getötet und lebt noch! </li>
-        {% endif %}
-
-        {% if status == "dead" %}
-        <li> {{ person }} hat {{ kills }} getötet und ist tot. </li>
-        {% endif %}
+        <li>
+            <form method="GET" action="/remove_player">
+                <input type="hidden" name="hash" value="{{ hash }}">
+                <input type="hidden" name="player_to_remove" value="{{ person }}">
+                <button type="submit">Spieler entfernen</button>
+                {{ person }} hat {{ kills }} getötet und
+                {% if status == "alive" %} lebt noch! {% endif %}
+                {% if status == "dead" %} ist tot. {% endif %}
+            </form>
+        </li>
     </ol>
     {% endfor %}
 </fieldset>
