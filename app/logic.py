@@ -125,7 +125,7 @@ class Session:
     def _index_of(self, name):
         """
         Returns the index of the player
-        :param name: name of the the player as str
+        :param name: name of the player as str
         :return: the index of the Player in player-order in the game if there is a
         running game, else None.
         """
@@ -169,7 +169,7 @@ class Session:
 
     def get_players(self):
         """
-        Returs a copy of the players of the current game.
+        Returns a copy of the players of the current game.
         :return: a list with the names of the players
         """
         players_copy = self.current_game.get('player_order').copy()
@@ -178,7 +178,7 @@ class Session:
 
     def player_in_game(self, player):
         """
-        Checks wether a player in the session is also in the current game,
+        Checks whether a player in the session is also in the current game,
         if it is running
         :param player: the name of the player
         :return: True if the player is in the game, else False
@@ -187,7 +187,7 @@ class Session:
 
     def is_alive(self, name):
         """
-        Checks wether a player is alive
+        Checks whether a player is alive
         :param name: name of the player
         :return: True if the player is alive, else False
         """
@@ -276,9 +276,9 @@ class Session:
 def load_session(session_name):
     """
     load a session. If there already exists a save-file that corresponds to
-    the session-name, return a session that has the same state as the save-
-    file, else return a new session.
-    To be used as factory-function for Sessions.
+    the session-name, return a session that has the same state as the
+    save-file, else return a new session.
+    To be used as factory-function for Session.
     :param session_name: the name of the session
     :return: a Session
     """
