@@ -3,6 +3,7 @@ import json
 from os.path import exists
 from datetime import datetime
 from dataclasses import dataclass
+from typing import Optional
 
 
 class Game:
@@ -64,7 +65,7 @@ class Game:
             'gamestates': {}
         }
 
-        # retreive saved gamestates, if a save file already exists
+        # retrieve saved gamestates, if a save file already exists
         if exists(f"..//saves//{self.name}.json"):
             with open(f"..//saves//{self.name}.json", mode='r') as file:
                 game['gamestates'] = json.load(file)['gamestates']
@@ -216,14 +217,102 @@ class Game:
 
 # =====================================================================================
 
+
+@dataclass
+class Weapon:
+    """
+    class to describe Weapon
+    """
+    name: str
+    creator_name: str
+
+
+@dataclass
+class Player:
+    """
+    class to describe Player
+    """
+    name: str
+    victim_name: str
+    weapon: Weapon
+    alive = True
+    kill_count = 0
+
+    def is_alive(self) -> bool:
+        """
+        getter vor alive
+        :return: True if Player is alive, False if not
+        """
+        return self.alive
+
+    def kill(self) -> None:
+        """
+        Kill the player
+        :return: None
+        """
+        self.alive = False
+
+
+@dataclass
+class NewGame:
+    """
+    A class to describe the state of a game.
+    """
+    name: str
+    players: list[Player]
+    available_weapons: list[Weapon]
+
+    def get_player(self, player_name: str) -> Optional[Player]:
+        """
+        Return a player with a given name
+        :param player_name: the name of the player
+        :return: the Player, or None if there is no player with name player_name
+        """
+        for player in self.players:
+            if player.name == player_name:
+                return player
+
+        return None
+
+    def get_victim(self, player: Player):
+        for player in self.players:
+            pass
+
+    def kill(self, killer: Player) -> None:
+        """
+        Call when a player has killed
+        :param killer: The Killer
+        :return: None
+        """
+        self.reassign_weapon(killer)
+        self.get_player(killer.victim_name).kill()
+
+    def reassign_weapon(self, player: Player) -> None:
+        """
+        Randomly reassign the weapon of the player
+        :param player: The player
+        :return: None
+        """
+        weapon = random.choice(self.available_weapons)
+        player.weapon = weapon
+
+
 @dataclass
 class Session:
     name: str
-    player_names: list
-    weapons: list
-    game: Game
+    players_names: list[str]
+    weapons: list[Weapon]
+    current_game: NewGame
 
-    def make_new_game(self):
+    def make_new_game(self, name: str) -> NewGame:
+        available_weapons = self.weapons.copy()
+        players = []
+        for player_name in self.players_names:
+            weapon = random.choice(available_weapons)
+            if len(available_weapons) == 0:
+                pass
+            available_weapons.remove(weapon)
+            players.append(Player(name))
         return None
 
     def save(self):
@@ -235,33 +324,3 @@ class Session:
     def add_weapon(self):
         pass
 
-
-@dataclass
-class NewGame:
-    name: str
-    players: list
-    available_weapons: list
-
-    def get_player(self, player_name):
-        for player in self.players:
-            if player.name == player_name:
-                return player
-
-        return None
-
-    def new_game(self, ):
-        pass
-
-
-@dataclass
-class Player:
-    name: str
-    victim = None
-    alive = True
-    kill_count = 0
-
-
-@dataclass
-class Weapon:
-    name: str
-    creator_name: str

@@ -1,3 +1,5 @@
+- Unit-Tests
+
 - Es sollte mehrere Sessions geben können
     - jede Session hat ein Game und ein Kennwort
     - Beim betreten einer Session wird man nach seinem Namen gefragt
@@ -11,3 +13,7 @@
 
 - In "/" sollte angezeigt werden, welche Personen angemeldet sind und welche im Moment spielen
     - Abschnitt unterm Leaderboard mit Spielern, die angemeldet sind aber gerade nicht spielen
+
+- Eventually:
+    - Veröffentlichen (Google Cloud?)
+    - CI/CD Pipeline
