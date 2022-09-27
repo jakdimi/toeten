@@ -3,15 +3,15 @@ In this module lives the flask application of the website.
 """
 
 import os
-import logic
 import random
 from flask import Flask, request, render_template, redirect
 import settings
+import logic
 
 
 sessions = {}
-""" 
-a dict of all the active sessions. 
+"""
+a dict of all the active sessions.
 looks like this:
 {
     'session_name1': session1
@@ -19,7 +19,7 @@ looks like this:
 }
 """
 hash_table = {}
-""" 
+"""
 a dict that links hashes of session- and player-names with the names themselves.
 looks like this:
 {
