@@ -3,10 +3,10 @@ In this module lives the flask application of the website.
 """
 
 import os
-import settings
 import logic
 import random
 from flask import Flask, request, render_template, redirect
+import settings
 
 
 sessions = {}
@@ -61,7 +61,8 @@ def str_or(str1, str2):
 
 def start_session(session_name):
     """
-    start the session with name session_name. If there is no save-file of this session create a new session.
+    start the session with name session_name. If there is no save-file of this session,
+    create a new session.
     :param session_name: the name of the session
     :return: None
     """
@@ -118,7 +119,7 @@ def set_session():
     if session_name is None or player_name is None:
         return redirect('/')
 
-    if session_name not in sessions.keys():
+    if session_name not in sessions:
         start_session(session_name)
 
     session = sessions.get(session_name)
@@ -136,7 +137,7 @@ def get_session():
     :return: The session-page
     """
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
-    if hash_str is None or hash_str not in hash_table.keys():
+    if hash_str is None or hash_str not in hash_table:
         return redirect('/')
 
     session_name, player_name = hash_table.get(hash_str)
@@ -183,7 +184,6 @@ def get_session():
                 player_infos=player_infos
             )
 
-
     else:
         mode = "not_running"
         with app.app_context():
@@ -218,11 +218,12 @@ def settings_page():
 @app.route("/add_thing", methods=['POST'])
 def add_thing():
     """
-    add a weapon to the session that corresponds to request.args.get('hash') or request.form.get('hash')
+    add a weapon to the session that corresponds to
+    request.args.get('hash') or request.form.get('hash')
     :return: index-page if there was a problem, personal session-page if not
     """
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
-    session_name, player_name = hash_table.get(hash_str)
+    session_name, _ = hash_table.get(hash_str)
     session = sessions.get(session_name)
     thing = request.form.get('thing')
 
@@ -236,7 +237,8 @@ def add_thing():
 @app.route("/has_killed", methods=['GET', 'POST'])
 def has_killed():
     """
-    called by the killer that corresponds to request.args.get('hash') or request.form.get('hash'),
+    called by the killer that corresponds to
+    request.args.get('hash') or request.form.get('hash'),
     to kill his current victim.
     :return: index-page if there was a problem, personal session-page if not
     """
@@ -260,7 +262,7 @@ def friedhof():
     :return: The friedhof-page
     """
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
-    session_name, player_name = hash_table.get(hash_str)
+    session_name, _ = hash_table.get(hash_str)
     session = sessions.get(session_name)
 
     if session is None:
@@ -279,12 +281,13 @@ def friedhof():
 @app.route('/new_game')
 def new_game():
     """
-    start a new game in the session that corresponds to request.args.get('hash') or request.form.get('hash').
+    start a new game in the session that corresponds to
+    request.args.get('hash') or request.form.get('hash').
     :return: the personal session-page
     """
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
     print(hash_str)
-    session_name, player_name = hash_table.get(hash_str)
+    session_name, _ = hash_table.get(hash_str)
 
     if session_name is None:
         return redirect('/')
@@ -297,11 +300,12 @@ def new_game():
 @app.route('/save_game')
 def save_game():
     """
-    save the session that corresponds to request.args.get('hash') or request.form.get('hash').
+    save the session that corresponds to
+    request.args.get('hash') or request.form.get('hash').
     :return: the personal session-page
     """
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
-    session_name, player_name = hash_table.get(hash_str)
+    session_name, _ = hash_table.get(hash_str)
 
     if session_name is None:
         return redirect('/')
@@ -314,12 +318,13 @@ def save_game():
 @app.route('/end_game')
 def end_game():
     """
-    if there is a game running in the session that corresponds to request.args.get('hash') or request.form.get('hash'),
+    if there is a game running in the session that corresponds to
+    request.args.get('hash') or request.form.get('hash'),
     end it.
     :return: the personal session-page
     """
     hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
-    session_name, player_name = hash_table.get(hash_str)
+    session_name, _ = hash_table.get(hash_str)
 
     if session_name is None:
         return redirect('/')
@@ -332,7 +337,8 @@ def end_game():
 @app.route('/remove_player')
 def remove_player():
     """
-    remove the player with name request.args.get('player_to_remove') from the session that corresponds to
+    remove the player with name request.args.get('player_to_remove')
+    from the session that corresponds to
     request.args.get('hash') or request.form.get('hash').
     :return: the personal session-page
     """
