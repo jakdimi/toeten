@@ -4,7 +4,7 @@ import random
 from flask import Flask, request, render_template, redirect
 
 
-current_game = logic.Game("Frankreich2", settings.INITIAL_PLAYERS, [])
+current_game = logic.Session("Frankreich2", settings.INITIAL_PLAYERS, [])
 
 
 def get_inschrift():
@@ -34,20 +34,20 @@ def index():
         with app.app_context():
             return render_template(
                 'index.html',
-                persons=current_game.persons,
+                persons=current_game.players,
                 nr_of_things=str(len(current_game.things)),
                 running="False"
             )
     else:
         leaderboard = zip(
-            current_game.current_gamestate['person_order'],
-            current_game.current_gamestate['killcount'])
+            current_game.current_game['person_order'],
+            current_game.current_game['kill_count'])
         leaderboard = sorted(leaderboard, key=lambda x: x[0])
         leaderboard = sorted(leaderboard, key=lambda x: x[1], reverse=True)
         with app.app_context():
             return render_template(
                 'index.html',
-                persons=current_game.persons,
+                persons=current_game.players,
                 nr_of_things=str(len(current_game.things)),
                 running="True",
                 leaderboard=leaderboard
@@ -120,17 +120,17 @@ def friedhof():
 
 @app.route("/settings")
 def settings_page():
-    gamestates = current_game.get_available_gamestates()
+    game_states = current_game.get_available_game_states()
 
-    saves = gamestates.keys()
+    saves = game_states.keys()
     dates = []
     for save in saves:
-        dates.append(gamestates[save]['last_saved'])
+        dates.append(game_states[save]['last_saved'])
 
     with app.app_context():
         return render_template(
             "settings.html",
-            persons=current_game.persons,
+            persons=current_game.players,
             players=current_game.get_players(),
             saves=zip(saves, dates)
         )
@@ -139,7 +139,7 @@ def settings_page():
 @app.route("/add_person", methods=['GET', 'POST'])
 def add_person():
     name = request.form.get('person')
-    if name not in current_game.persons:
+    if name not in current_game.players:
         current_game.add_person(name)
     return redirect("/settings")
 
@@ -155,7 +155,7 @@ def new_game():
 def load_game():
     save = request.form.get('save_select')
     print(current_game)
-    current_game.load_gamestate(save)
+    current_game.load_game_state(save)
     print(current_game)
     return redirect("/settings")
 
@@ -173,5 +173,5 @@ def save_things():
 
 
 if __name__ == "__main__":
-    current_game.save_gamestate("save0", as_new=False)
+    current_game.save_game_state("save0", as_new=False)
     app.run(host="0.0.0.0", port=settings.PORT)

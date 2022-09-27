@@ -1,153 +1,103 @@
 import random
 import json
 from os.path import exists
-from datetime import datetime
-from dataclasses import dataclass
-from typing import Optional
+from os import mkdir
 
 
-class Game:
+class Session:
 
-    def __init__(self, name, persons, things):
+    def __init__(self, name, players, things):
         self.name = name
         self.running = False
-        self.persons = persons
+        self.players = players
         self.things = things
-        self.current_gamestate = {
-            'person_order': [],
+        self.current_game = {
+            'player_order': [],
             'things': [],
             'alive_status': [],
-            'killcount': [],
-            'available_things': [],
-            'last_saved': ''
+            'kill_count': [],
+            'available_things': []
         }
 
     def __repr__(self):
         return \
-            f"""
-            Game: {{
-              name: {self.name}
-              persons: {self.persons}
-              things: {self.things}
-              current_gamestate: {self.current_gamestate}
-            }}
-            """
+            f"""Game: {{
+    name: {self.name}
+    persons: {self.players}
+    things: {self.things}
+    current_game: {self.current_game}
+}}"""
+
+    def as_dict(self):
+        return {
+            'name': self.name,
+            'running': self.running,
+            'players': self.players,
+            'things': self.things,
+            'current_game': self.current_game
+        }
 
     # ========================= handle the saving and loading ============================
 
-    def save_persons(self):
-        if exists(f"..//saves//{self.name}.json"):
-            with open(f"..//saves//{self.name}.json", mode='r') as file:
-                game = json.load(file)
-            game['players'] = self.persons
-
-            with open(f"..//saves//{self.name}.json", mode='w') as file:
-                file.write(json.dumps(game))
-
-    def save_things(self):
-        if exists(f"..//saves//{self.name}.json"):
-            with open(f"..//saves//{self.name}.json", mode='r') as file:
-                game = json.load(file)
-            game['things'] = self.things
-
-            with open(f"..//saves//{self.name}.json", mode='w') as file:
-                file.write(json.dumps(game))
-
-    def save_gamestate(self, gamestate_name="save", as_new=True):
-        """ save the current gamestate """
-
-        self.current_gamestate['last_saved'] = datetime.now().strftime("%D:%H:%M:%S")
-
-        game = {
-            'name': self.name,
-            'players': self.persons,
-            'things': self.things,
-            'gamestates': {}
-        }
-
-        # retrieve saved gamestates, if a save file already exists
-        if exists(f"..//saves//{self.name}.json"):
-            with open(f"..//saves//{self.name}.json", mode='r') as file:
-                game['gamestates'] = json.load(file)['gamestates']
-
-        # make sure that the gamestate is saved as a new gamestate
-        if gamestate_name in game['gamestates'].keys() and as_new is True:
-            count = 1
-            while (gamestate_name + count.__str__()) in game['gamestates']:
-                count += 1
-            gamestate_name = gamestate_name + count.__str__()
-
-        # save game
-        game['gamestates'][gamestate_name] = self.current_gamestate
-        with open(f"..//saves//{self.name}.json", mode='w') as file:
-            file.write(json.dumps(game))
-
-    def load_gamestate(self, gamestate_name="save"):
-        """ load gamestate 'name' """
-
-        # load save file
-        with open(f"..//saves//{self.name}.json", mode='r') as file:
-            game = json.load(file)
-
-        # if gamestate already exists, load that gamestate, else create new gamestate
-        if gamestate_name in game['gamestates'].keys():
-            self.current_gamestate = game['gamestates'][gamestate_name]
-
-        else:
-            self.current_gamestate = self.make_new_gamestate()
-
-        self.running = True
-
-    def make_new_gamestate(self):
+    def make_new_game(self):
         """
-        create a new gamestate of this game
-        :return: the new gamestate
+        create a new game of this game
+        :return: the new game
         """
-        new_gamestate = {
-            'person_order': [],
+        new_game = {
+            'player_order': [],
             'things': [],
             'alive_status': [],
-            'killcount': [],
+            'kill_count': [],
             'available_things': []
         }
 
         # set the person order for the new game
-        players_copy = self.persons.copy()
+        players_copy = self.players.copy()
         random.shuffle(players_copy)
-        new_gamestate['person_order'] = players_copy
+        new_game['player_order'] = players_copy
 
         # set the available things for the new game
-        new_gamestate['available_things'] = self.things.copy()
+        new_game['available_things'] = self.things.copy()
 
-        # set the things, alive_status and killcount for the new game
-        for person in self.persons:
-            if len(new_gamestate['available_things']) == 0:
+        # set the things, alive_status and kill_count for the new game
+        for person in self.players:
+            if len(new_game['available_things']) == 0:
                 if len(self.things) == 0:
-                    new_gamestate['available_things'].append("")
+                    new_game['available_things'].append("")
                 else:
-                    new_gamestate['available_things'] = self.things.copy()
+                    new_game['available_things'] = self.things.copy()
 
-            thing = random.choice(new_gamestate['available_things'])
-            new_gamestate['available_things'].remove(thing)
+            thing = random.choice(new_game['available_things'])
+            new_game['available_things'].remove(thing)
 
-            new_gamestate['things'].append(thing)
-            new_gamestate['alive_status'].append("True")
-            new_gamestate['killcount'].append("0")
+            new_game['things'].append(thing)
+            new_game['alive_status'].append("True")
+            new_game['kill_count'].append("0")
 
-        return new_gamestate
+        return new_game
 
-    def get_available_gamestates(self):
+    def get_available_games(self):
         if not exists(f"..//saves//{self.name}.json"):
             return []
 
         with open(f"..//saves//{self.name}.json", mode='r') as file:
-            gamestates = json.load(file)['gamestates']
-        return gamestates
+            games = json.load(file)['games']
+        return games
+
+    def save(self):
+        if not exists("..//saves//"):
+            mkdir("..//saves//")
+
+        file_name = f"..//saves//{self.name}.json"
+        with open(file_name, mode='w') as file:
+            file.write(json.dumps(self.as_dict()))
+            print(f"Session.save: {json.dumps(self.as_dict())}")
 
     def start_new_game(self):
-        self.current_gamestate = self.make_new_gamestate()
+        self.current_game = self.make_new_game()
         self.running = True
-        self.save_gamestate()
+        self.save()
 
     # =====================================================================================
 
@@ -155,62 +105,62 @@ class Game:
 
     def add_thing(self, thing):
         self.things.append(thing)
-        self.current_gamestate['available_things'].append(thing)
-        random.shuffle(self.current_gamestate['available_things'])
+        self.current_game['available_things'].append(thing)
+        random.shuffle(self.current_game['available_things'])
 
     def add_person(self, person):
-        self.persons.append(person)
-        self.persons.sort()
+        self.players.append(person)
+        self.players.sort()
 
     def get_players(self):
-        players_copy = self.current_gamestate['person_order'].copy()
+        players_copy = self.current_game['player_order'].copy()
         players_copy.sort()
         return players_copy
 
     def _index_of(self, name):
-        return self.current_gamestate['person_order'].index(name)
+        return self.current_game['player_order'].index(name)
 
     def is_alive(self, name):
-        alive_status = self.current_gamestate['alive_status']
+        alive_status = self.current_game['alive_status']
         return alive_status[self._index_of(name)] == "True"
 
     def renew_thing(self, name):
-        available_things = self.current_gamestate['available_things']
+        available_things = self.current_game['available_things']
         if len(available_things) == 0:
             available_things = self.things.copy()
 
         thing = random.choice(available_things)
         available_things.remove(thing)
 
-        self.current_gamestate['things'][self._index_of(name)] = thing
+        self.current_game['things'][self._index_of(name)] = thing
 
     def get_victim(self, name):
         ind = self._index_of(name)
-        person_order = self.current_gamestate['person_order']
-        alive_status = self.current_gamestate['alive_status']
-        for i in range(ind + 1, len(self.persons) + ind + 1):
-            if alive_status[i % len(person_order)] == "True":
-                victim = person_order[i % len(person_order)]
+        player_order = self.current_game['player_order']
+        alive_status = self.current_game['alive_status']
+        for i in range(ind + 1, len(self.players) + ind + 1):
+            if alive_status[i % len(player_order)] == "True":
+                victim = player_order[i % len(player_order)]
                 return victim
         return ""
 
     def get_thing(self, name):
         ind = self._index_of(name)
-        return self.current_gamestate['things'][ind]
+        return self.current_game['things'][ind]
 
     def has_killed(self, killer_name):
         victim_index = self._index_of(self.get_victim(killer_name))
         killer_index = self._index_of(killer_name)
-        alive_status = self.current_gamestate['alive_status']
-        killcount = self.current_gamestate['killcount']
+        alive_status = self.current_game['alive_status']
+        kill_count = self.current_game['kill_count']
         self.renew_thing(killer_name)
-        killcount[killer_index] = f"{ int(killcount[killer_index]) + 1 }"
+        kill_count[killer_index] = f"{ int(kill_count[killer_index]) + 1 }"
         alive_status[victim_index] = "False"
-        print(f"{killer_name} hat {self.get_victim(killer_name)} getötet! Insgesamt tötete {killer_name} {killcount[killer_index]}!")
+        print(f"{killer_name} hat {self.get_victim(killer_name)} getötet! Insgesamt tötete {killer_name} {kill_count[killer_index]}!")
 
     def get_dead(self):
         dead_people = []
-        for person in self.current_gamestate['person_order']:
+        for person in self.current_game['player_order']:
             if not self.is_alive(person):
                 dead_people.append(person)
         return dead_people
@@ -218,109 +168,25 @@ class Game:
 # =====================================================================================
 
 
-@dataclass
-class Weapon:
-    """
-    class to describe Weapon
-    """
-    name: str
-    creator_name: str
+def load_session(session_name):
+    file_name = f"..//saves//{session_name}.json"
+    if not exists(file_name):
+        return Session(session_name, [], [])
+    else:
+        with open(file_name, mode='r') as file:
+            session_dict = json.load(file)
+
+        running = session_dict['running']
+        players = session_dict['players']
+        things = session_dict['things']
+        current_game = session_dict['current_game']
+
+        session = Session(session_name, players, things)
+        session.running = running
+        session.current_game = current_game
+        session.save()
+
+        return session
 
 
-@dataclass
-class Player:
-    """
-    class to describe Player
-    """
-    name: str
-    victim_name: str
-    weapon: Weapon
-    alive = True
-    kill_count = 0
-
-    def is_alive(self) -> bool:
-        """
-        getter vor alive
-        :return: True if Player is alive, False if not
-        """
-        return self.alive
-
-    def kill(self) -> None:
-        """
-        Kill the player
-        :return: None
-        """
-        self.alive = False
-
-
-@dataclass
-class NewGame:
-    """
-    A class to describe the state of a game.
-    """
-    name: str
-    players: list[Player]
-    available_weapons: list[Weapon]
-
-    def get_player(self, player_name: str) -> Optional[Player]:
-        """
-        Return a player with a given name
-        :param player_name: the name of the player
-        :return: the Player, or None if there is no player with name player_name
-        """
-        for player in self.players:
-            if player.name == player_name:
-                return player
-
-        return None
-
-    def get_victim(self, player: Player):
-        for player in self.players:
-            pass
-
-    def kill(self, killer: Player) -> None:
-        """
-        Call when a player has killed
-        :param killer: The Killer
-        :return: None
-        """
-        self.reassign_weapon(killer)
-        self.get_player(killer.victim_name).kill()
-
-    def reassign_weapon(self, player: Player) -> None:
-        """
-        Randomly reassign the weapon of the player
-        :param player: The player
-        :return: None
-        """
-        weapon = random.choice(self.available_weapons)
-        player.weapon = weapon
-
-
-@dataclass
-class Session:
-    name: str
-    players_names: list[str]
-    weapons: list[Weapon]
-    current_game: NewGame
-
-    def make_new_game(self, name: str) -> NewGame:
-        available_weapons = self.weapons.copy()
-        players = []
-        for player_name in self.players_names:
-            weapon = random.choice(available_weapons)
-            if len(available_weapons) == 0:
-                pass
-            available_weapons.remove(weapon)
-            players.append(Player(name))
-        return None
-
-    def save(self):
-        pass
-
-    def load(self):
-        pass
-
-    def add_weapon(self):
-        pass
 
