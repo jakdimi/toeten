@@ -1,5 +1,6 @@
 <!--
 Attributes:
+- hash: str
 - dead_people: list<str>
 -->
 <!DOCTYPE html>
@@ -31,7 +32,8 @@ Attributes:
     </ul>
 </fieldset>
 
-<form method="GET" action="/">
+<form method="GET" action="/session">
+    <input type="hidden" name="hash" value="{{ hash }}">
     <button type="submit">Zurück</button>
 </form>
 

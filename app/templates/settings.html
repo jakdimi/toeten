@@ -1,8 +1,6 @@
 <!--
 Attributes:
-- persons: list<str>
-- players: list<str>
-- saves: list<Tuple<(str, str)>>
+- hash: str
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -13,87 +11,34 @@ Attributes:
 <body>
 
 <fieldset>
-    <legend> Angemeldet sind: </legend>
-    <ul>
-    {% for person in persons %}
-        <li>{{ person }}</li>
-    {% endfor %}
-    </ul>
-</fieldset>
-
-<fieldset>
-    <legend> Füge eine Person hinzu: </legend>
-    <form method="POST" action="/add_person">
-        <input name="person">
-        <button type="submit">Füge die Person hinzu!</button>
-    </form>
-</fieldset>
-
-<fieldset>
-    <legend>Gerade spielen:</legend>
-    <ul>
-    {% for person in players %}
-        <li>{{ person }}</li>
-    {% endfor %}
-    </ul>
-</fieldset>
-
-<fieldset>
-    <legend>Spielstand: </legend>
+    <legend>Spiel: </legend>
     <form method="SET" action="/new_game">
-        <button type="subit"> Neues Spiel starten </button>
+        <div>
+            <input type="hidden" name="hash" value="{{ hash }}">
+            <button type="subit"> Neues Spiel starten </button>
+        </div>
     </form>
 
-    <fieldset>
-        <legend>Spielstand Speichern:</legend>
-
-        <form method="SET" action="save_game">
-            <div>
-                <input type="checkbox" id="as_new" name="as_new" checked>
-                <label for="as_new">Neuer Spielstand</label>
-            </div>
-
-            <div>
-              <input type="text" id="name" name="name" value="save">
-            </div>
-
-            <div>
-              <button type="submit"> speichern </button>
-            </div>
-        </form>
-    </fieldset>
-
-    <fieldset>
-        <legend>Spielstand Laden:</legend>
-
-        <form method="SET" action="/load_game">
-            <div>
-              <select name="save_select">
-                {% for (save_name, save_date) in saves %}
-                <option value="{{ save_name }}"> {{ save_name }} von {{ save_date }} </option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <div>
-                <button type="submit"> laden </button>
-            </div>
-        </form>
-    </fieldset>
-
-    <form method="GET" action="/save_persons">
-        <button type="submit">Spieler speichern</button>
+    <form method="SET" action="/save_game">
+        <div>
+            <input type="hidden" name="hash" value="{{ hash }}">
+            <button type="submit"> Spiel speichern </button>
+        </div>
     </form>
 
-    <form method="GET" action="/save_things">
-        <button type="submit">Dinge speichern</button>
+    <form method="SET" action="/end_game">
+        <div>
+            <input type="hidden" name="hash" value="{{ hash }}">
+            <button type="submit"> Spiel beenden </button>
+        </div>
     </form>
 
 </fieldset>
 
 <fieldset>
     <legend>Weiter</legend>
-    <form method="GET" action="/">
+    <form method="GET" action="/session">
+        <input type="hidden" name="hash" value="{{ hash }}">
         <button type="submit"> Zurück </button>
     </form>
 </fieldset>

@@ -5,7 +5,6 @@ from flask import Flask, request, render_template, redirect
 
 
 sessions = {}
-current_game = logic.Session("Frankreich2", settings.INITIAL_PLAYERS, [])
 hash_table = {}
 
 
@@ -13,6 +12,16 @@ def hash_args(session_name, player_name):
     hash_str = str(hash(session_name + player_name))
     hash_table[hash_str] = (session_name, player_name)
     return hash_str
+
+
+def str_or(str1, str2):
+    if str1 is not None:
+        return str1
+
+    if str2 is not None:
+        return str2
+
+    return None
 
 
 def start_session(session_name):
@@ -67,14 +76,13 @@ def set_session():
 
 @app.route('/session', methods=['GET'])
 def get_session():
-    hash_str = request.args.get('hash')
+    hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
     if hash_str is None:
         return redirect('/')
 
     session_name, player_name = hash_table[hash_str]
 
     session = sessions[session_name]
-    print(session)
 
     if session.running:
         if session.is_alive(player_name):
@@ -92,6 +100,7 @@ def get_session():
             kill_count = session.get_kill_count(player)
             player_infos.append((player, kill_count, alive))
 
+        print(f"nr_of_things: {len(session.things)}")
         with app.app_context():
             return render_template(
                 'session.html',
@@ -119,39 +128,103 @@ def get_session():
 
 @app.route("/settings")
 def settings_page():
-    pass
+    hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
+
+    if hash_str is None:
+        return redirect("/")
+
+    with app.app_context():
+        return render_template(
+            "settings.html",
+            hash=hash_str
+        )
 
 
 @app.route("/add_thing", methods=['POST'])
 def add_thing():
-    hash_str = request.args.get('hash')
+    hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
+    session_name, player_name = hash_table[hash_str]
+    session = sessions[session_name]
     thing = request.form.get('thing')
-    current_game.add_thing(thing)
+
+    if session is None or thing is None:
+        return redirect('/')
+
+    session.add_thing(thing)
     return redirect(f'/session?hash={hash_str}')
 
 
 @app.route("/has_killed", methods=['GET', 'POST'])
 def has_killed():
-    hash_str = request.args.get('hash')
+    hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
+    session_name, player_name = hash_table[hash_str]
+    session = sessions[session_name]
 
-    if hash_str is None:
+    if session is None:
         return redirect('/')
 
-    session_name, player_name = hash_table[hash_str]
-    current_game.has_killed(player_name)
-    print(f"{current_game.get_victim(player_name)} wurde getoetet!")
+    session.has_killed(player_name)
+    print(f"{session.get_victim(player_name)} wurde getoetet!")
     return redirect(f"/personal?name={player_name}")
 
 
 @app.route("/friedhof")
 def friedhof():
-    dead_people = current_game.get_dead()
+    hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
+    session_name, player_name = hash_table[hash_str]
+    session = sessions[session_name]
+
+    if session is None:
+        return redirect('/')
+
+    dead_people = session.get_dead()
     with app.app_context():
         return render_template(
             "friedhof.html",
+            hash=hash_str,
             dead_people=dead_people,
             get_inschrift=get_inschrift
         )
+
+
+@app.route('/new_game')
+def new_game():
+    hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
+    print(hash_str)
+    session_name, player_name = hash_table[hash_str]
+
+    if session_name is None:
+        return redirect('/')
+
+    session = sessions[session_name]
+    session.start_new_game()
+    return redirect(f'/session?hash={hash_str}')
+
+
+@app.route('/save_game')
+def save_game():
+    hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
+    session_name, player_name = hash_table[hash_str]
+
+    if session_name is None:
+        return redirect('/')
+
+    session = sessions[session_name]
+    session.save()
+    return redirect(f'/session?hash={hash_str}')
+
+
+@app.route('/end_game')
+def end_game():
+    hash_str = str_or(request.args.get('hash'), request.form.get('hash'))
+    session_name, player_name = hash_table[hash_str]
+
+    if session_name is None:
+        return redirect('/')
+
+    session = sessions[session_name]
+    session.end_game()
+    return redirect(f'/session?hash={hash_str}')
 
 
 if __name__ == "__main__":

@@ -77,14 +77,6 @@ class Session:
 
         return new_game
 
-    def get_available_games(self):
-        if not exists(f"..//saves//{self.name}.json"):
-            return []
-
-        with open(f"..//saves//{self.name}.json", mode='r') as file:
-            games = json.load(file)['games']
-        return games
-
     def save(self):
         if not exists("..//saves//"):
             mkdir("..//saves//")
@@ -99,6 +91,11 @@ class Session:
         self.running = True
         self.save()
 
+    def end_game(self):
+        self.current_game = {}
+        self.running = False
+        self.save()
+
     # =====================================================================================
 
     # ========================== handle game mechanics ====================================
@@ -107,11 +104,10 @@ class Session:
         return self.current_game['player_order'].index(name)
 
     def add_thing(self, thing):
-        print(f"added {thing}")
         self.things.append(thing)
-        self.current_game['available_things'].append(thing)
-        random.shuffle(self.current_game['available_things'])
-        print(self.things)
+        if self.running:
+            self.current_game['available_things'].append(thing)
+            random.shuffle(self.current_game['available_things'])
 
     def add_player(self, person):
         self.players.append(person)

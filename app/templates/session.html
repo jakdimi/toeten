@@ -17,7 +17,7 @@ Attributes:
 <body>
 
 <div>
-    <h2> {{ session_name }} </h2>
+    <h2> Hallo {{ player_name }}, du bist im Spiel: {{ session_name }} </h2>
     <form method="GET" action="/">
         <button type="submit"> Session verlassen </button>
     </form>
@@ -81,10 +81,12 @@ Attributes:
 
 <fieldset>
     <legend> Weiter: </legend>
-    <form method="GET" action="/settings?hash={{ hash }}">
+    <form method="GET" action="/settings">
+        <input type="hidden" name="hash" value="{{ hash }}">
         <button type="submit">Einstellungen</button>
     </form>
-    <form method="GET" action="/friedhof?hash={{ hash }}">
+    <form method="GET" action="/friedhof">
+        <input type="hidden" name="hash" value="{{ hash }}">
         <button type="submit">Zum Friedhof</button>
     </form>
 </fieldset>
