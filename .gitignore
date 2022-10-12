@@ -4,3 +4,4 @@
 # Auch diese brauchen wir nicht 
 /__pycache__
 /app/__pycache__
+output
